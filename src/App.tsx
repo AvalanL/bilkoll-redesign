@@ -10,6 +10,18 @@ import ReportViewPage from './pages/ReportViewPage';
 import GuidePage from './pages/GuidePage';
 import PremiumPage from './pages/PremiumPage';
 
+/**
+ * For routes not handled by the SPA (guides, besiktning, skatt, etc.),
+ * force a full page reload so the server can serve the static HTML.
+ */
+function StaticRedirect() {
+  // Force a server-side navigation for non-SPA routes
+  if (typeof window !== 'undefined') {
+    window.location.reload();
+  }
+  return null;
+}
+
 export default function App() {
   return (
     <Router>
@@ -26,13 +38,8 @@ export default function App() {
           <Route path="guide/:slug" element={<GuidePage />} />
           <Route path="premium" element={<PremiumPage />} />
           
-          {/* Fallbacks for other routes mentioned in the brief */}
-          <Route path="besiktning/:brand?/:model?" element={<Home />} />
-          <Route path="skatt/:brand?/:model?/:year?" element={<Home />} />
-          <Route path="vardering/:brand?/:model?/:year?" element={<Home />} />
-          <Route path="forsakring/:brand?/:model?" element={<Home />} />
-          <Route path="dack/:brand?/:model?" element={<Home />} />
-          <Route path="service/:brand?/:model?" element={<Home />} />
+          {/* Routes served by static HTML — redirect to server */}
+          <Route path="*" element={<StaticRedirect />} />
         </Route>
       </Routes>
     </Router>

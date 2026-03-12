@@ -1,22 +1,35 @@
+import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ChevronRight, Car, Info, ArrowRight, Activity, TrendingUp, ShieldCheck } from 'lucide-react';
 import { motion } from 'motion/react';
 
+interface ModelData {
+  model: string;
+  count: number;
+  avgPrice: number;
+  minPrice: number;
+  maxPrice: number;
+}
+
 export default function BrandPage() {
   const { brand } = useParams<{ brand: string }>();
   const brandName = brand ? brand.charAt(0).toUpperCase() + brand.slice(1) : 'Volvo';
+  const [models, setModels] = useState<ModelData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const models = [
-    { name: 'XC60', count: '145 230', trend: '+2.4%' },
-    { name: 'V60', count: '132 450', trend: '-1.2%' },
-    { name: 'XC40', count: '89 120', trend: '+5.8%' },
-    { name: 'V90', count: '76 540', trend: '+0.5%' },
-    { name: 'XC90', count: '54 320', trend: '-0.8%' },
-    { name: 'S60', count: '45 100', trend: '+1.1%' },
-    { name: 'V40', count: '42 800', trend: '-3.4%' },
-    { name: 'C40', count: '12 400', trend: '+12.4%' },
-    { name: 'EX30', count: '8 500', trend: 'New' },
-  ];
+  useEffect(() => {
+    if (brand) {
+      fetch(`/api/market/models/${encodeURIComponent(brandName)}`)
+        .then(r => r.json())
+        .then(d => {
+          if (d.models) setModels(d.models);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    }
+  }, [brand, brandName]);
+
+  const totalVehicles = models.reduce((sum, m) => sum + m.count, 0);
 
   return (
     <div className="bg-white min-h-screen pb-32 selection:bg-accent selection:text-white">
@@ -35,7 +48,6 @@ export default function BrandPage() {
 
       {/* Header */}
       <section className="relative pt-16 pb-24 overflow-hidden border-b border-zinc-100">
-        {/* Atmospheric Background */}
         <div className="absolute top-0 right-0 w-[40%] h-full bg-accent/5 blur-[100px] rounded-full pointer-events-none"></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -72,11 +84,11 @@ export default function BrandPage() {
               >
                 <div className="flex items-center gap-3">
                   <Activity size={18} className="text-accent" />
-                  <span className="text-xl font-light text-zinc-500"><span className="font-bold text-black">606 460</span> fordon i trafik</span>
+                  <span className="text-xl font-light text-zinc-500"><span className="font-bold text-black">{totalVehicles.toLocaleString('sv')}</span> annonser</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <TrendingUp size={18} className="text-emerald-500" />
-                  <span className="text-xl font-light text-zinc-500">Marknadsandel <span className="font-bold text-black">12.4%</span></span>
+                  <span className="text-xl font-light text-zinc-500"><span className="font-bold text-black">{models.length}</span> modeller</span>
                 </div>
               </motion.div>
             </div>
@@ -108,43 +120,44 @@ export default function BrandPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {models.map((model, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
-              whileHover={{ y: -6 }}
-            >
-              <Link 
-                to={`/bil/${brand?.toLowerCase() || 'volvo'}/${model.name.toLowerCase()}`}
-                className="card p-8 flex items-center justify-between group relative overflow-hidden"
+        {loading ? (
+          <div className="text-center py-20">
+            <p className="text-zinc-400 font-light">Laddar modeller...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {models.map((model, index) => (
+              <motion.div
+                key={model.model}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.05 }}
+                whileHover={{ y: -6 }}
               >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-bl-full -mr-12 -mt-12"></div>
-                
-                <div className="relative z-10">
-                  <h3 className="text-xl font-medium text-black group-hover:text-accent transition-colors duration-300">
-                    {brandName} {model.name}
-                  </h3>
-                  <div className="flex items-center gap-4 mt-3">
-                    <p className="text-sm text-zinc-400 font-light">{model.count} i trafik</p>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      model.trend === 'New' ? 'bg-accent/10 text-accent' : 
-                      model.trend.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
-                    }`}>
-                      {model.trend}
-                    </span>
+                <Link 
+                  to={`/bil/${brand?.toLowerCase() || 'volvo'}/${model.model.toLowerCase()}`}
+                  className="card p-8 flex items-center justify-between group relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-bl-full -mr-12 -mt-12"></div>
+                  
+                  <div className="relative z-10">
+                    <h3 className="text-xl font-medium text-black group-hover:text-accent transition-colors duration-300">
+                      {brandName} {model.model}
+                    </h3>
+                    <div className="flex items-center gap-4 mt-3">
+                      <p className="text-sm text-zinc-400 font-light">{model.count} annonser</p>
+                      <span className="text-sm text-zinc-400 font-light">{Number(model.avgPrice).toLocaleString('sv')} kr snitt</span>
+                    </div>
                   </div>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-zinc-50 flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-all duration-300 relative z-10">
-                  <ArrowRight className="w-4 h-4" />
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+                  <div className="w-10 h-10 rounded-full bg-zinc-50 flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-all duration-300 relative z-10">
+                    <ArrowRight className="w-4 h-4" />
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         {/* Info Box */}
         <motion.div 
@@ -159,7 +172,7 @@ export default function BrandPage() {
           <div className="flex-grow">
             <h4 className="text-2xl font-medium text-black mb-3">Saknar du en modell?</h4>
             <p className="text-zinc-500 font-light text-lg leading-relaxed max-w-3xl">
-              Vi visar endast modeller med fler än 100 fordon i trafik för att säkerställa tillförlitlig statistik. 
+              Vi visar endast modeller med aktiva annonser. 
               Du kan alltid söka på ett specifikt registreringsnummer för att hitta information om ovanligare modeller.
             </p>
           </div>

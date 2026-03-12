@@ -1,28 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { TrendingUp, Bell, ChevronRight, Info, Zap, Mail, ArrowRight, Activity, DollarSign, Star, Shield } from 'lucide-react';
 import { motion } from 'motion/react';
 
-const mockData = [
-  { name: '150-200k', count: 12, color: '#F4F4F5' },
-  { name: '200-250k', count: 45, color: '#F4F4F5' },
-  { name: '250-300k', count: 86, color: '#F4F4F5' },
-  { name: '300-350k', count: 124, color: '#FF6321' },
-  { name: '350-400k', count: 64, color: '#F4F4F5' },
-  { name: '400-450k', count: 23, color: '#F4F4F5' },
-  { name: '450k+', count: 8, color: '#F4F4F5' },
-];
+interface MakeData {
+  make: string;
+  count: number;
+  avgPrice: number;
+}
+
+interface ModelData {
+  model: string;
+  count: number;
+  avgPrice: number;
+  minPrice: number;
+  maxPrice: number;
+}
 
 export default function MarketPage() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
-  const [hoveredBar, setHoveredBar] = useState<number | null>(null);
+  const [makes, setMakes] = useState<MakeData[]>([]);
+  const [totalListings, setTotalListings] = useState(0);
+  const [selectedMake, setSelectedMake] = useState('');
+  const [selectedModel, setSelectedModel] = useState('');
+  const [models, setModels] = useState<ModelData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/market/overview')
+      .then(r => r.json())
+      .then(d => {
+        if (d.makes) setMakes(d.makes);
+        if (d.totalListings) setTotalListings(d.totalListings);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (selectedMake) {
+      fetch(`/api/market/models/${encodeURIComponent(selectedMake)}`)
+        .then(r => r.json())
+        .then(d => {
+          if (d.models) setModels(d.models);
+        });
+    }
+  }, [selectedMake]);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) setSubscribed(true);
   };
+
+  const displayMake = selectedMake || (makes[0]?.make || 'Volvo');
+  const displayModels = models.length > 0 ? models : [];
 
   return (
     <div className="bg-white min-h-screen pb-32 selection:bg-accent selection:text-white">
@@ -43,7 +75,7 @@ export default function MarketPage() {
                 Förstå <span className="font-bold italic serif">värdet</span> på <br />bilmarknaden.
               </h1>
               <p className="text-xl md:text-2xl text-zinc-500 font-light leading-relaxed mb-12">
-                Vi analyserar tusentals annonser dagligen för att ge dig den mest pricksäkra värderingen i Sverige.
+                Vi analyserar {totalListings ? totalListings.toLocaleString('sv') : 'tusentals'} annonser dagligen för att ge dig den mest pricksäkra värderingen i Sverige.
               </p>
             </motion.div>
 
@@ -54,90 +86,128 @@ export default function MarketPage() {
               transition={{ delay: 0.1 }}
               className="flex flex-col sm:flex-row gap-4 max-w-3xl"
             >
-              <div className="flex-1 grid grid-cols-3 gap-4">
-                <select className="bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 text-sm font-medium focus:outline-none focus:border-accent transition-all">
-                  <option>Volvo</option>
-                  <option>Volkswagen</option>
-                  <option>Toyota</option>
+              <div className="flex-1 grid grid-cols-2 gap-4">
+                <select 
+                  className="bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 text-sm font-medium focus:outline-none focus:border-accent transition-all"
+                  value={selectedMake}
+                  onChange={e => { setSelectedMake(e.target.value); setSelectedModel(''); setModels([]); }}
+                >
+                  <option value="">Välj märke</option>
+                  {makes.map(m => (
+                    <option key={m.make} value={m.make}>{m.make} ({m.count})</option>
+                  ))}
                 </select>
-                <select className="bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 text-sm font-medium focus:outline-none focus:border-accent transition-all">
-                  <option>XC60</option>
-                  <option>V60</option>
-                  <option>XC40</option>
-                </select>
-                <select className="bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 text-sm font-medium focus:outline-none focus:border-accent transition-all">
-                  <option>2020</option>
-                  <option>2019</option>
-                  <option>2018</option>
+                <select 
+                  className="bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 text-sm font-medium focus:outline-none focus:border-accent transition-all"
+                  value={selectedModel}
+                  onChange={e => setSelectedModel(e.target.value)}
+                  disabled={!selectedMake}
+                >
+                  <option value="">Välj modell</option>
+                  {displayModels.map(m => (
+                    <option key={m.model} value={m.model}>{m.model} ({m.count})</option>
+                  ))}
                 </select>
               </div>
-              <button className="bg-black text-white px-10 py-4 rounded-2xl font-bold hover:bg-accent transition-all duration-500">Uppdatera</button>
+              <Link 
+                to={selectedMake && selectedModel ? `/marknad?make=${selectedMake}&model=${selectedModel}` : '#'}
+                className="bg-black text-white px-10 py-4 rounded-2xl font-bold hover:bg-accent transition-all duration-500 text-center"
+              >
+                Visa
+              </Link>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Main Stats & Chart */}
+      {/* Main Content */}
       <section className="py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             
-            {/* Chart Section */}
+            {/* Brand/Model Grid */}
             <div className="lg:col-span-2 space-y-12">
-              <div className="card p-12">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-12 gap-6">
-                  <div>
-                    <h3 className="text-sm font-bold text-black uppercase tracking-widest mb-2">Prisfördelning</h3>
-                    <p className="text-zinc-400 font-light">Volvo XC60 2020 • 362 annonser just nu</p>
+              
+              {/* Makes overview or models list */}
+              {selectedMake && displayModels.length > 0 ? (
+                <div>
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <button onClick={() => { setSelectedMake(''); setModels([]); }} className="micro-label text-accent mb-4 flex items-center gap-2 hover:text-black transition-colors">
+                        <ArrowRight className="w-3 h-3 rotate-180" /> Alla märken
+                      </button>
+                      <h2 className="text-3xl font-light text-black tracking-tight">{selectedMake} <span className="text-zinc-300">({displayModels.length} modeller)</span></h2>
+                    </div>
                   </div>
-                  <div className="bg-accent/5 text-accent px-6 py-3 rounded-2xl text-sm font-bold uppercase tracking-widest border border-accent/10">
-                    Snittpris: 312 500 kr
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {displayModels.map((m, i) => (
+                      <motion.div
+                        key={m.model}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        whileHover={{ y: -4 }}
+                      >
+                        <Link 
+                          to={`/bil/${selectedMake.toLowerCase()}/${m.model.toLowerCase()}`}
+                          className="card p-8 flex items-center justify-between group"
+                        >
+                          <div>
+                            <h3 className="text-xl font-medium text-black group-hover:text-accent transition-colors">{selectedMake} {m.model}</h3>
+                            <p className="text-sm text-zinc-400 font-light mt-2">
+                              {m.count} annonser · {Number(m.avgPrice).toLocaleString('sv')} kr snitt
+                            </p>
+                            <p className="text-xs text-zinc-300 font-light mt-1">
+                              {Number(m.minPrice).toLocaleString('sv')} – {Number(m.maxPrice).toLocaleString('sv')} kr
+                            </p>
+                          </div>
+                          <div className="w-10 h-10 rounded-full bg-zinc-50 flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-all">
+                            <ArrowRight className="w-4 h-4" />
+                          </div>
+                        </Link>
+                      </motion.div>
+                    ))}
                   </div>
                 </div>
-
-                <div className="h-[400px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={mockData} onMouseMove={(state) => {
-                      if (state.activeTooltipIndex !== undefined) setHoveredBar(state.activeTooltipIndex);
-                    }} onMouseLeave={() => setHoveredBar(null)}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F4F4F5" />
-                      <XAxis 
-                        dataKey="name" 
-                        axisLine={false} 
-                        tickLine={false} 
-                        tick={{ fill: '#A1A1AA', fontSize: 12, fontWeight: 500 }}
-                        dy={15}
-                      />
-                      <YAxis hide />
-                      <Tooltip 
-                        cursor={{ fill: 'transparent' }}
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            return (
-                              <div className="bg-black text-white px-6 py-3 rounded-xl shadow-2xl border border-white/10 backdrop-blur-xl">
-                                <div className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-60">Antal bilar</div>
-                                <div className="text-xl font-bold">{payload[0].value} st</div>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                      <Bar dataKey="count" radius={[12, 12, 0, 0]}>
-                        {mockData.map((entry, index) => (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={index === hoveredBar ? '#FF6321' : entry.color}
-                            style={{ transition: 'fill 0.3s ease' }}
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+              ) : (
+                <div>
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <h2 className="text-3xl font-light text-black tracking-tight">Alla märken <span className="text-zinc-300">({makes.length})</span></h2>
+                      <p className="text-zinc-500 font-light mt-2">{totalListings.toLocaleString('sv')} aktiva annonser totalt</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {makes.map((m, i) => (
+                      <motion.div
+                        key={m.make}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: i * 0.03 }}
+                        whileHover={{ y: -4 }}
+                      >
+                        <button
+                          onClick={() => setSelectedMake(m.make)}
+                          className="card p-8 flex items-center justify-between group w-full text-left"
+                        >
+                          <div>
+                            <h3 className="text-xl font-medium text-black group-hover:text-accent transition-colors">{m.make}</h3>
+                            <p className="text-sm text-zinc-400 font-light mt-2">
+                              {m.count} annonser · {Number(m.avgPrice).toLocaleString('sv')} kr snitt
+                            </p>
+                          </div>
+                          <div className="w-10 h-10 rounded-full bg-zinc-50 flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-all">
+                            <ChevronRight className="w-4 h-4" />
+                          </div>
+                        </button>
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* AI Market Analysis */}
+              {/* AI Market Analysis cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <motion.div 
                   whileHover={{ y: -5 }}
@@ -181,7 +251,7 @@ export default function MarketPage() {
                   <h3 className="text-2xl font-bold text-black tracking-tight">Prisbevakning</h3>
                 </div>
                 <p className="text-zinc-500 font-light mb-8 leading-relaxed">
-                  Få ett mail när snittpriset för <span className="text-black font-medium">Volvo XC60 2020</span> ändras med mer än 2%.
+                  Få ett mail när snittpriset ändras med mer än 2%.
                 </p>
                 
                 {subscribed ? (
@@ -232,9 +302,9 @@ export default function MarketPage() {
                 <h3 className="text-[10px] font-bold text-black uppercase tracking-widest mb-10">Marknadshälsa</h3>
                 <div className="space-y-8">
                   {[
-                    { label: 'Prisstabilitet', value: 'Hög', color: 'text-emerald-500' },
-                    { label: 'Utbud', value: 'Normalt', color: 'text-blue-500' },
-                    { label: 'Köptryck', value: 'Växande', color: 'text-accent' }
+                    { label: 'Aktiva annonser', value: totalListings.toLocaleString('sv'), color: 'text-black font-bold' },
+                    { label: 'Märken', value: `${makes.length} st`, color: 'text-blue-500' },
+                    { label: 'Uppdateras', value: 'Varje natt', color: 'text-accent' }
                   ].map((stat, i) => (
                     <div key={i} className="flex justify-between items-center">
                       <span className="text-zinc-500 font-light text-sm">{stat.label}</span>

@@ -21,13 +21,14 @@ export default function Header() {
     setIsMobileMenuOpen(false);
   }, [location]);
 
+  // spa: true = use React Router Link (client-side); false = use <a> (server-side)
   const navLinks = [
-    { name: 'Märken', path: '/bil/volvo' },
-    { name: 'Marknad', path: '/marknad' },
-    { name: 'Besiktning', path: '/besiktning' },
-    { name: 'Värdering', path: '/vardering' },
-    { name: 'Premium', path: '/premium' },
-    { name: 'Guider', path: '/guide/besiktning-2026' },
+    { name: 'Märken', path: '/bil/volvo', spa: false },
+    { name: 'Marknad', path: '/marknad', spa: true },
+    { name: 'Besiktning', path: '/besiktning', spa: false },
+    { name: 'Värdering', path: '/vardering', spa: false },
+    { name: 'Premium', path: '/premium', spa: true },
+    { name: 'Guider', path: '/guide', spa: false },
   ];
 
   return (
@@ -56,25 +57,26 @@ export default function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center space-x-1">
-            {navLinks.map((link, i) => (
-              <motion.div
-                key={link.name}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-              >
-                <Link
-                  to={link.path}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                    location.pathname === link.path 
-                      ? 'text-accent bg-accent/5' 
-                      : 'text-zinc-500 hover:text-black hover:bg-zinc-100'
-                  }`}
+            {navLinks.map((link, i) => {
+              const isActive = location.pathname === link.path || location.pathname.startsWith(link.path + '/');
+              const cls = `px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                isActive ? 'text-accent bg-accent/5' : 'text-zinc-500 hover:text-black hover:bg-zinc-100'
+              }`;
+              return (
+                <motion.div
+                  key={link.name}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
                 >
-                  {link.name}
-                </Link>
-              </motion.div>
-            ))}
+                  {link.spa ? (
+                    <Link to={link.path} className={cls}>{link.name}</Link>
+                  ) : (
+                    <a href={link.path} className={cls}>{link.name}</a>
+                  )}
+                </motion.div>
+              );
+            })}
           </nav>
 
           {/* Actions (Desktop) */}
@@ -119,15 +121,17 @@ export default function Header() {
             className="md:hidden border-t border-zinc-100 bg-white overflow-hidden"
           >
             <div className="px-4 pt-4 pb-8 space-y-2">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.path}
-                  className="block px-4 py-3 rounded-2xl text-lg font-medium text-zinc-600 hover:text-accent hover:bg-accent/5 transition-all"
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {navLinks.map((link) => 
+                link.spa ? (
+                  <Link key={link.name} to={link.path} className="block px-4 py-3 rounded-2xl text-lg font-medium text-zinc-600 hover:text-accent hover:bg-accent/5 transition-all">
+                    {link.name}
+                  </Link>
+                ) : (
+                  <a key={link.name} href={link.path} className="block px-4 py-3 rounded-2xl text-lg font-medium text-zinc-600 hover:text-accent hover:bg-accent/5 transition-all">
+                    {link.name}
+                  </a>
+                )
+              )}
               <div className="pt-4">
                 <Link
                   to="/sok"
