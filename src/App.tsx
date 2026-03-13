@@ -9,13 +9,11 @@ import MarketPage from './pages/MarketPage';
 import ReportLandingPage from './pages/ReportLandingPage';
 import ReportViewPage from './pages/ReportViewPage';
 import GuidePage from './pages/GuidePage';
+import GuidesIndexPage from './pages/GuidesIndexPage';
 import PremiumPage from './pages/PremiumPage';
 import BesiktningPage from './pages/BesiktningPage';
+import BesiktningModelPage from './pages/BesiktningModelPage';
 
-/**
- * For routes not handled by the SPA (guides index, static SEO pages, etc.),
- * force a full page reload so the server can serve the static HTML.
- */
 function StaticRedirect() {
   if (typeof window !== 'undefined') {
     window.location.reload();
@@ -29,20 +27,34 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
+          
+          {/* Märken */}
           <Route path="bil" element={<BrandsIndexPage />} />
           <Route path="bil/:brand" element={<BrandPage />} />
           <Route path="bil/:brand/:model" element={<ModelYearPage />} />
           <Route path="bil/:brand/:model/:year" element={<ModelYearPage />} />
+          
+          {/* Sök & Marknad */}
           <Route path="sok" element={<SearchPage />} />
           <Route path="marknad" element={<MarketPage />} />
+          
+          {/* Besiktning */}
           <Route path="besiktning" element={<BesiktningPage />} />
           <Route path="besiktning/:brand" element={<BesiktningPage />} />
+          <Route path="besiktning/:brand/:model" element={<BesiktningModelPage />} />
+          
+          {/* Rapporter */}
           <Route path="rapport/:brand/:model" element={<ReportLandingPage />} />
           <Route path="rapport/visa/:token" element={<ReportViewPage />} />
+          
+          {/* Guider */}
+          <Route path="guide" element={<GuidesIndexPage />} />
           <Route path="guide/:slug" element={<GuidePage />} />
+          
+          {/* Premium */}
           <Route path="premium" element={<PremiumPage />} />
           
-          {/* Routes served by static HTML — redirect to server */}
+          {/* Static fallback */}
           <Route path="*" element={<StaticRedirect />} />
         </Route>
       </Routes>

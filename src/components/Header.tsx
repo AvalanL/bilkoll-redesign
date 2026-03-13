@@ -23,12 +23,11 @@ export default function Header() {
 
   // spa: true = use React Router Link (client-side); false = use <a> (server-side)
   const navLinks = [
-    { name: 'Märken', path: '/bil/volvo', spa: false },
+    { name: 'Märken', path: '/bil', spa: true },
     { name: 'Marknad', path: '/marknad', spa: true },
-    { name: 'Besiktning', path: '/besiktning', spa: false },
-    { name: 'Värdering', path: '/vardering', spa: false },
+    { name: 'Besiktning', path: '/besiktning', spa: true },
     { name: 'Premium', path: '/premium', spa: true },
-    { name: 'Guider', path: '/guide', spa: false },
+    { name: 'Guider', path: '/guide', spa: true },
   ];
 
   return (
