@@ -174,10 +174,10 @@ export default function SearchPage() {
                     {/* Quick Info Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
                       {[
-                        { label: 'Mätarställning', value: v.mileage ? `${v.mileage} mil` : '–', icon: <Activity size={16} /> },
-                        { label: 'Besiktigad till', value: v.inspectionDate || '–', icon: <ShieldCheck size={16} /> },
-                        { label: 'Fordonsskatt', value: v.tax ? `${Number(v.tax).toLocaleString('sv')} kr/år` : '–', icon: <Calculator size={16} /> },
-                        { label: 'Ägare', value: v.owners ? `${v.owners} st` : '–', icon: <Car size={16} /> }
+                        { label: 'Mätarställning', value: v.mileage ? `${Number(v.mileage).toLocaleString('sv')} mil` : '–', icon: <Activity size={16} /> },
+                        { label: 'Besiktigad till', value: v.inspection_valid_to || v.inspectionDate || '–', icon: <ShieldCheck size={16} /> },
+                        { label: 'Fordonsskatt', value: (v.tax_yearly || v.tax) ? `${Number(v.tax_yearly || v.tax).toLocaleString('sv')} kr/år` : '–', icon: <Calculator size={16} /> },
+                        { label: 'Ägare', value: (v.previous_owners || v.owners) ? `${v.previous_owners || v.owners} st` : '–', icon: <Car size={16} /> }
                       ].map((item, i) => (
                         <div key={i} className="card p-8 text-center group hover:border-accent/20 transition-all">
                           <div className="w-10 h-10 rounded-2xl bg-zinc-50 text-zinc-400 group-hover:bg-accent group-hover:text-white flex items-center justify-center mx-auto mb-4 transition-colors">
@@ -349,7 +349,7 @@ export default function SearchPage() {
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-zinc-500 font-light text-sm">Nästa besiktning</span>
-                          <span className="font-bold text-accent">Senast {v.inspectionDate || '–'}</span>
+                          <span className="font-bold text-accent">Senast {v.inspection_valid_to || v.inspectionDate || '–'}</span>
                         </div>
                       </div>
                     </div>
