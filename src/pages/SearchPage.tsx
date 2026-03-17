@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { ShieldCheck, Calculator, TrendingUp, ChevronRight, Search, Zap, Info, ArrowRight, Car, History, Star, Activity, Loader2 } from 'lucide-react';
+import { ShieldCheck, Calculator, TrendingUp, ChevronRight, Search, Zap, Info, ArrowRight, Car, History, Star, Activity, Loader2, Lock, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import SearchBox from '../components/SearchBox';
 
@@ -10,21 +10,28 @@ interface VehicleData {
   cost?: any;
   market?: any;
   advice?: any[];
+  adviceCount?: number;
+  paid?: boolean;
   error?: string;
 }
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
   const regnr = searchParams.get('regnr') || '';
+  const token = searchParams.get('token') || '';
   const [data, setData] = useState<VehicleData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const isPaid = data?.paid === true;
 
   useEffect(() => {
     if (regnr && regnr.length >= 2) {
       setLoading(true);
       setError('');
-      fetch(`/api/report/${encodeURIComponent(regnr.replace(/\s/g, '').toUpperCase())}`)
+      const url = `/api/report/${encodeURIComponent(regnr.replace(/\s/g, '').toUpperCase())}${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+      fetch(url)
         .then(r => r.json())
         .then(d => {
           if (d.error) {
@@ -42,12 +49,37 @@ export default function SearchPage() {
     } else {
       setData(null);
     }
-  }, [regnr]);
+  }, [regnr, token]);
 
   const v = data?.vehicle || {};
   const val = data?.valuation || {};
   const cost = data?.cost || {};
   const hasResult = data && !error && v.make;
+
+  const handleUnlock = async () => {
+    if (!v.make || !v.model) return;
+    setCheckoutLoading(true);
+    try {
+      const res = await fetch('/api/checkout/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          make: v.make,
+          model: v.model,
+          year: v.year || '',
+          regnr: v.regNumber || regnr,
+        }),
+      });
+      const d = await res.json();
+      if (d.url) {
+        window.location.href = d.url;
+      } else {
+        setCheckoutLoading(false);
+      }
+    } catch {
+      setCheckoutLoading(false);
+    }
+  };
 
   return (
     <div className="bg-white min-h-screen pb-32 selection:bg-accent selection:text-white">
@@ -126,11 +158,13 @@ export default function SearchPage() {
                     <h2 className="text-5xl md:text-7xl font-light text-black mb-4 tracking-tighter leading-tight">{v.make} <span className="font-bold">{v.model}</span></h2>
                     <p className="text-xl md:text-2xl text-zinc-500 font-light">{v.year} • {v.gearbox || 'Automat'} • {v.fuel} {v.power ? `• ${v.power} hk` : ''}</p>
                   </div>
-                  <div className="flex gap-4 w-full md:w-auto">
-                    <Link to={`/rapport/${(v.make||'').toLowerCase()}/${(v.model||'').toLowerCase()}`} className="flex-1 md:flex-none bg-black text-white px-10 py-5 rounded-full font-bold hover:bg-accent transition-all duration-500 shadow-2xl shadow-black/10 flex items-center justify-center gap-2 group">
-                      Köp AI-rapport <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                  </div>
+                  {isPaid && (
+                    <div className="flex gap-4 w-full md:w-auto">
+                      <span className="flex-1 md:flex-none bg-emerald-600 text-white px-10 py-5 rounded-full font-bold flex items-center justify-center gap-2">
+                        <CheckCircle2 className="w-5 h-5" /> Rapport upplåst
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -155,39 +189,116 @@ export default function SearchPage() {
                       ))}
                     </div>
 
-                    {/* AI Teaser - Vibrant */}
-                    <motion.div 
-                      whileHover={{ y: -4 }}
-                      className="relative p-12 rounded-[3rem] overflow-hidden group bg-black text-white shadow-2xl"
-                    >
-                      <div className="absolute top-0 right-0 w-64 h-64 bg-accent/20 rounded-full blur-[100px] -mr-32 -mt-32 group-hover:bg-accent/30 transition-colors"></div>
-                      
-                      <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-10">
-                        <div className="w-20 h-20 bg-accent rounded-[2rem] flex items-center justify-center flex-shrink-0 shadow-2xl shadow-accent/20">
-                          <Zap className="w-10 h-10 text-white" fill="white" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="text-3xl font-light mb-4 tracking-tight">Marknadsvärdering & AI-analys</h3>
-                          <p className="text-zinc-400 font-light mb-8 leading-relaxed text-lg">
-                            {val.comparables ? (
-                              <>Vi har hittat <span className="text-white font-medium">{val.comparables}</span> liknande {v.make} {v.model} på marknaden. </>
-                            ) : null}
-                            Lås upp den fullständiga rapporten för att se exakt värdering och AI-rådgivning för <span className="text-white font-bold tracking-widest">{v.regNumber || regnr}</span>.
-                          </p>
-                          <Link to={`/rapport/${(v.make||'').toLowerCase()}/${(v.model||'').toLowerCase()}`} className="inline-flex items-center gap-2 text-accent font-bold uppercase tracking-widest text-xs hover:text-accent-vibrant transition-colors">
-                            Se exempelrapport <ArrowRight className="w-4 h-4" />
-                          </Link>
-                        </div>
-                      </div>
-                    </motion.div>
+                    {/* Paywall / Premium Section */}
+                    {isPaid ? (
+                      <>
+                        {/* Valuation Card — UNLOCKED */}
+                        {val.estimatedValue && (
+                          <div className="card p-12">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-4">Marknadsvärdering</div>
+                            <div className="text-5xl font-light text-black tracking-tighter mb-2">{Number(val.estimatedValue).toLocaleString('sv')} kr</div>
+                            <p className="text-zinc-500 font-light">Baserat på {val.comparables || 0} jämförbara bilar</p>
+                            {val.lowRange && val.highRange && (
+                              <div className="mt-6 flex gap-8">
+                                <div><span className="text-xs text-zinc-400 uppercase tracking-widest">Lägst</span><div className="text-xl font-medium text-black">{Number(val.lowRange).toLocaleString('sv')} kr</div></div>
+                                <div><span className="text-xs text-zinc-400 uppercase tracking-widest">Högst</span><div className="text-xl font-medium text-black">{Number(val.highRange).toLocaleString('sv')} kr</div></div>
+                              </div>
+                            )}
+                          </div>
+                        )}
 
-                    {/* Valuation Card */}
-                    {val.estimatedValue && (
-                      <div className="card p-12">
-                        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-4">Marknadsvärdering</div>
-                        <div className="text-5xl font-light text-black tracking-tighter mb-2">{Number(val.estimatedValue).toLocaleString('sv')} kr</div>
-                        <p className="text-zinc-500 font-light">Baserat på {val.comparables || 0} jämförbara bilar</p>
-                      </div>
+                        {/* AI Advice — UNLOCKED */}
+                        {data?.advice && data.advice.length > 0 && (
+                          <div className="card p-12">
+                            <div className="flex items-center gap-4 mb-10">
+                              <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center">
+                                <span className="text-white font-bold text-xs tracking-widest">AI</span>
+                              </div>
+                              <h3 className="text-3xl font-light text-black tracking-tight">AI-Rådgivning</h3>
+                            </div>
+                            <div className="space-y-8">
+                              {data.advice.map((item: any, i: number) => (
+                                <div key={i} className="flex items-start gap-6">
+                                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 ${item.type === 'warning' ? 'bg-amber-50' : item.type === 'positive' ? 'bg-emerald-50' : 'bg-accent/5'}`}>
+                                    {item.type === 'warning' ? <AlertTriangle className="w-5 h-5 text-amber-600" /> : item.type === 'positive' ? <CheckCircle2 className="w-5 h-5 text-emerald-600" /> : <Info className="w-5 h-5 text-accent" />}
+                                  </div>
+                                  <div>
+                                    <h4 className="text-lg font-medium text-black mb-2">{item.title}</h4>
+                                    <p className="text-zinc-500 font-light leading-relaxed">{item.text}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Market Data — UNLOCKED */}
+                        {data?.market && data.market.totalListings > 0 && (
+                          <div className="card p-12">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-4">Marknadsdata</div>
+                            <p className="text-zinc-500 font-light">{data.market.totalListings} liknande bilar analyserade från Blocket</p>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      /* PAYWALL — show blurred teaser + unlock CTA */
+                      <motion.div 
+                        whileHover={{ y: -2 }}
+                        className="relative rounded-[3rem] overflow-hidden shadow-2xl"
+                      >
+                        {/* Blurred preview behind */}
+                        <div className="p-12 bg-zinc-50 relative">
+                          <div className="filter blur-[6px] select-none pointer-events-none">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-4">Marknadsvärdering</div>
+                            <div className="text-5xl font-light text-black tracking-tighter mb-2">••• ••• kr</div>
+                            <p className="text-zinc-500 font-light mb-8">Baserat på {val.comparables || '–'} jämförbara bilar</p>
+                            <div className="space-y-4">
+                              <div className="h-4 bg-zinc-200 rounded-full w-3/4"></div>
+                              <div className="h-4 bg-zinc-200 rounded-full w-1/2"></div>
+                              <div className="h-4 bg-zinc-200 rounded-full w-2/3"></div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Overlay CTA */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/80 to-white flex flex-col items-center justify-center p-8 text-center">
+                          <div className="w-16 h-16 bg-accent rounded-[2rem] flex items-center justify-center mb-6 shadow-xl shadow-accent/20">
+                            <Zap className="w-8 h-8 text-white" fill="white" />
+                          </div>
+                          <h3 className="text-2xl md:text-3xl font-light text-black mb-3 tracking-tight">
+                            Lås upp <span className="font-bold">fullständig rapport</span>
+                          </h3>
+                          <p className="text-zinc-500 font-light mb-2 max-w-md leading-relaxed">
+                            {val.comparables ? (
+                              <>Vi hittade <span className="text-black font-medium">{val.comparables} liknande bilar</span>. </>
+                            ) : null}
+                            {data?.adviceCount ? (
+                              <>{data.adviceCount} AI-insikter redo. </>
+                            ) : null}
+                            {data?.market?.totalListings ? (
+                              <>{data.market.totalListings} annonser analyserade.</>
+                            ) : null}
+                          </p>
+                          <ul className="text-sm text-zinc-600 font-light space-y-2 mb-8 text-left">
+                            <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-accent flex-shrink-0" /> Exakt marknadsvärdering i kronor</li>
+                            <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-accent flex-shrink-0" /> AI-rådgivning med kända modellfel</li>
+                            <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-accent flex-shrink-0" /> Ägarkostnader per månad</li>
+                            <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-accent flex-shrink-0" /> Jämförbara annonser på Blocket</li>
+                          </ul>
+                          <button
+                            onClick={handleUnlock}
+                            disabled={checkoutLoading}
+                            className="bg-black text-white px-12 py-5 rounded-full font-bold hover:bg-accent transition-all duration-500 shadow-2xl shadow-black/10 flex items-center gap-3 group disabled:opacity-50"
+                          >
+                            {checkoutLoading ? (
+                              <><Loader2 className="w-5 h-5 animate-spin" /> Laddar...</>
+                            ) : (
+                              <>Lås upp rapport — 49 kr <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
+                            )}
+                          </button>
+                          <p className="text-xs text-zinc-400 mt-4">Engångsbetalning • Swish & kort • Direkt tillgång</p>
+                        </div>
+                      </motion.div>
                     )}
 
                     {/* Specs Table */}
@@ -243,7 +354,7 @@ export default function SearchPage() {
                       </div>
                     </div>
 
-                    {cost.totalMonthlyCost && (
+                    {isPaid && cost.totalMonthlyCost ? (
                       <div className="card p-10">
                         <h3 className="text-[10px] font-bold text-black uppercase tracking-[0.2em] mb-10 flex items-center gap-3">
                           <Calculator className="w-5 h-5 text-accent" />
@@ -264,7 +375,31 @@ export default function SearchPage() {
                           </div>
                         </div>
                       </div>
-                    )}
+                    ) : !isPaid && cost.hasCostData ? (
+                      <div className="card p-10 relative overflow-hidden">
+                        <h3 className="text-[10px] font-bold text-black uppercase tracking-[0.2em] mb-10 flex items-center gap-3">
+                          <Calculator className="w-5 h-5 text-accent" />
+                          Ägarkostnader
+                        </h3>
+                        <div className="space-y-8 filter blur-[5px] select-none">
+                          <div className="flex justify-between items-center pb-6 border-b border-zinc-100">
+                            <span className="text-zinc-500 font-light text-sm">Fordonsskatt</span>
+                            <span className="font-medium text-black">• ••• kr/år</span>
+                          </div>
+                          <div className="flex justify-between items-center pb-6 border-b border-zinc-100">
+                            <span className="text-zinc-500 font-light text-sm">Försäkring</span>
+                            <span className="font-medium text-black">~• ••• kr/år</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-zinc-500 font-light text-sm">Total/mån</span>
+                            <span className="font-bold text-accent">• ••• kr/mån</span>
+                          </div>
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center bg-white/40">
+                          <Lock className="w-6 h-6 text-zinc-300" />
+                        </div>
+                      </div>
+                    ) : null}
 
                   </div>
                 </div>
