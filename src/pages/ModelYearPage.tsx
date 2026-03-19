@@ -261,6 +261,7 @@ export default function ModelYearPage() {
               <div className="space-y-4">
                 {[
                   { to: `/besiktning/${brand}/${model}`, icon: <ShieldCheck size={18} />, label: 'Besiktningsguide' },
+                  { to: `/kalkylator/${brand}-${model}`.toLowerCase().replace(/[^a-z0-9/]+/g, '-'), icon: <Calculator size={18} />, label: 'Beräkna månadskostnad' },
                   { to: `/skatt/${brand}/${model}/${year}`, icon: <Calculator size={18} />, label: 'Skatteberäkning' },
                   { to: `/vardering/${brand}/${model}/${year}`, icon: <TrendingUp size={18} />, label: 'Värderingsguide' }
                 ].map((link, i) => (

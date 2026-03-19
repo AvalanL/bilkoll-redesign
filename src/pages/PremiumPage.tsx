@@ -28,7 +28,9 @@ export default function PremiumPage() {
         'Värdeprognos (3 år)',
         'Dolda fel-varningar',
         'Mätarställningsanalys',
-        'Ägarhistorik detaljerad'
+        'Ägarhistorik detaljerad',
+        'Finansieringsanalys',
+        'Total ägandekostnad'
       ],
       cta: 'Köp rapport',
       popular: true

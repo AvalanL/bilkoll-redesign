@@ -27,6 +27,13 @@ export default function Home() {
       color: 'bg-cyan-50'
     },
     {
+      title: 'Kalkylator',
+      description: 'Beräkna billån, jämför leasing vs köp och total ägandekostnad.',
+      icon: <Calculator className="w-6 h-6 text-accent" strokeWidth={1.5} />,
+      link: '/kalkylator',
+      color: 'bg-amber-50'
+    },
+    {
       title: 'Däck & Service',
       description: 'Dimensioner, rekommendationer och serviceintervaller.',
       icon: <Settings className="w-6 h-6 text-accent" strokeWidth={1.5} />,

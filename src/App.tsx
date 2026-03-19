@@ -16,6 +16,7 @@ const GuidesIndexPage = lazy(() => import('./pages/GuidesIndexPage'));
 const PremiumPage = lazy(() => import('./pages/PremiumPage'));
 const BesiktningPage = lazy(() => import('./pages/BesiktningPage'));
 const BesiktningModelPage = lazy(() => import('./pages/BesiktningModelPage'));
+const FinancingCalculatorPage = lazy(() => import('./pages/FinancingCalculatorPage'));
 
 function StaticRedirect() {
   if (typeof window !== 'undefined') {
@@ -65,6 +66,10 @@ export default function App() {
             
             {/* Premium */}
             <Route path="premium" element={<PremiumPage />} />
+            
+            {/* Kalkylator */}
+            <Route path="kalkylator" element={<FinancingCalculatorPage />} />
+            <Route path="kalkylator/:slug" element={<FinancingCalculatorPage />} />
             
             {/* Static fallback */}
             <Route path="*" element={<StaticRedirect />} />

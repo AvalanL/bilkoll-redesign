@@ -26,6 +26,7 @@ export default function Header() {
     { name: 'Märken', path: '/bil', spa: true },
     { name: 'Marknad', path: '/marknad', spa: true },
     { name: 'Besiktning', path: '/besiktning', spa: true },
+    { name: 'Kalkylator', path: '/kalkylator', spa: true },
     { name: 'Premium', path: '/premium', spa: true },
     { name: 'Guider', path: '/guide', spa: true },
   ];

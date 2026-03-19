@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { ShieldCheck, Calculator, TrendingUp, ChevronRight, Search, Zap, Info, ArrowRight, Car, History, Star, Activity, Loader2, Lock, CheckCircle2, AlertTriangle, Users, Gauge, Fuel } from 'lucide-react';
+import { ShieldCheck, Calculator, TrendingUp, ChevronRight, Search, Zap, Info, ArrowRight, Car, History, Star, Activity, Loader2, Lock, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import SearchBox from '../components/SearchBox';
 
@@ -99,59 +99,46 @@ export default function SearchPage() {
 
   return (
     <div className="bg-white min-h-screen pb-32 selection:bg-accent selection:text-white">
-      {/* Search Header — compact when viewing a car, full when empty */}
-      <section className={`relative overflow-hidden border-b border-zinc-100 ${hasResult ? 'pt-24 pb-6' : 'pt-32 pb-20'}`}>
-        {!hasResult && (
-          <div className="absolute inset-0 z-0">
-            <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-accent/5 rounded-full blur-[120px]"></div>
-          </div>
-        )}
+      {/* Search Header */}
+      <section className="relative pt-32 pb-20 overflow-hidden border-b border-zinc-100">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-accent/5 rounded-full blur-[120px]"></div>
+        </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          {hasResult ? (
-            /* Compact search bar when viewing results */
-            <div className="flex items-center gap-6">
-              <div className="flex-1 max-w-lg">
-                <SearchBox size="normal" />
-              </div>
-              <span className="hidden md:block text-xs text-zinc-400 font-light">Sök ett annat fordon</span>
-            </div>
-          ) : (
-            /* Full hero when no results */
-            <div className="max-w-3xl">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <div className="micro-label text-accent mb-8">Fordonssök</div>
-                <h1 className="text-6xl md:text-8xl font-light text-black mb-10 tracking-tighter leading-[0.9]">
-                  Hitta <span className="font-bold italic serif">allt</span> om <br />vilken bil som helst.
-                </h1>
-              </motion.div>
+          <div className="max-w-3xl">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="micro-label text-accent mb-8">Fordonssök</div>
+              <h1 className="text-6xl md:text-8xl font-light text-black mb-10 tracking-tighter leading-[0.9]">
+                Hitta <span className="font-bold italic serif">allt</span> om <br />vilken bil som helst.
+              </h1>
+            </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <SearchBox size="normal" />
-              </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <SearchBox size="normal" />
+            </motion.div>
 
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="mt-8 flex flex-wrap gap-4"
-              >
-                <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Populära sökningar:</span>
-                {['VOLVO XC60', 'TESLA MODEL 3', 'VW GOLF'].map(tag => (
-                  <Link key={tag} to={`/sok?regnr=${tag}`} className="text-xs font-bold text-black hover:text-accent transition-colors">
-                    {tag}
-                  </Link>
-                ))}
-              </motion.div>
-            </div>
-          )}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="mt-8 flex flex-wrap gap-4"
+            >
+              <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Populära sökningar:</span>
+              {['VOLVO XC60', 'TESLA MODEL 3', 'VW GOLF'].map(tag => (
+                <Link key={tag} to={`/sok?regnr=${tag}`} className="text-xs font-bold text-black hover:text-accent transition-colors">
+                  {tag}
+                </Link>
+              ))}
+            </motion.div>
+          </div>
         </div>
       </section>
 
@@ -206,52 +193,17 @@ export default function SearchPage() {
                         { label: 'Mätarställning', value: v.mileage ? `${Number(v.mileage).toLocaleString('sv')} mil` : '–', icon: <Activity size={16} /> },
                         { label: 'Besiktigad till', value: v.inspection_valid_to || v.inspectionDate || '–', icon: <ShieldCheck size={16} /> },
                         { label: 'Fordonsskatt', value: (v.tax_yearly || v.tax) ? `${Number(v.tax_yearly || v.tax).toLocaleString('sv')} kr/år` : '–', icon: <Calculator size={16} /> },
-                        { label: 'Ägare', value: (v.previous_owners || v.owners) ? `${v.previous_owners || v.owners} st` : '–', icon: <Car size={16} />, sub: v.mileage && (v.previous_owners || v.owners) ? `~${Math.round(Number(v.mileage) / Number(v.previous_owners || v.owners)).toLocaleString('sv')} mil/ägare` : undefined }
-                      ].map((item: any, i: number) => (
+                        { label: 'Ägare', value: (v.previous_owners || v.owners) ? `${v.previous_owners || v.owners} st` : '–', icon: <Car size={16} /> }
+                      ].map((item, i) => (
                         <div key={i} className="card p-8 text-center group hover:border-accent/20 transition-all">
                           <div className="w-10 h-10 rounded-2xl bg-zinc-50 text-zinc-400 group-hover:bg-accent group-hover:text-white flex items-center justify-center mx-auto mb-4 transition-colors">
                             {item.icon}
                           </div>
                           <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-2">{item.label}</div>
                           <div className="text-xl font-bold text-black tracking-tight">{item.value}</div>
-                          {item.sub && <div className="text-xs text-zinc-400 mt-1">{item.sub}</div>}
                         </div>
                       ))}
                     </div>
-
-                    {/* Contextual Intelligence Badges */}
-                    {(() => {
-                      const badges: { text: string; type: 'warning' | 'info' | 'danger' }[] = [];
-                      const ownerCount = Number(v.previous_owners || v.owners || 0);
-                      const mileage = Number(v.mileage || 0);
-                      const carAge = v.year ? new Date().getFullYear() - Number(v.year) : 0;
-                      const yearlyMileage = carAge > 0 ? Math.round(mileage / carAge) : 0;
-                      
-                      if (ownerCount > 8) badges.push({ text: `Många ägare — ${ownerCount} st (över genomsnittet)`, type: 'warning' });
-                      else if (ownerCount > 5) badges.push({ text: `${ownerCount} ägare — fler än genomsnittet`, type: 'info' });
-                      if (yearlyMileage > 1500) badges.push({ text: `Högt årligt miltal (${yearlyMileage.toLocaleString('sv')} mil/år)`, type: 'info' });
-                      
-                      if (v.inspection_valid_to) {
-                        const daysUntil = Math.ceil((new Date(v.inspection_valid_to).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                        if (daysUntil < 0) badges.push({ text: 'Besiktningen har gått ut!', type: 'danger' });
-                        else if (daysUntil < 60) badges.push({ text: `Besiktning går ut om ${daysUntil} dagar`, type: 'warning' });
-                      }
-                      
-                      return badges.length > 0 ? (
-                        <div className="flex flex-wrap gap-3">
-                          {badges.map((b, i) => (
-                            <div key={i} className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-medium ${
-                              b.type === 'danger' ? 'bg-red-50 text-red-700 border border-red-200' :
-                              b.type === 'warning' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                              'bg-blue-50 text-blue-700 border border-blue-200'
-                            }`}>
-                              {b.type === 'danger' || b.type === 'warning' ? <AlertTriangle className="w-4 h-4 flex-shrink-0" /> : <Info className="w-4 h-4 flex-shrink-0" />}
-                              {b.text}
-                            </div>
-                          ))}
-                        </div>
-                      ) : null;
-                    })()}
 
                     {/* FREE Market Valuation — always show this */}
                     {!isPaid && val.estimatedValue && (
@@ -260,92 +212,10 @@ export default function SearchPage() {
                         <div className="text-5xl font-light text-black tracking-tighter mb-2">{Number(val.estimatedValue).toLocaleString('sv')} <span className="text-2xl text-zinc-400">kr</span></div>
                         <p className="text-zinc-500 font-light mb-4">Baserat på {val.comparables || data?.market?.totalListings || 0} jämförbara bilar på Blocket, Finn.no, KVD & Bytbil</p>
                         {val.lowRange && val.highRange && (
-                          <div className="mt-6 pt-6 border-t border-emerald-100">
-                            <div className="text-xs text-zinc-400 uppercase tracking-widest mb-4">Prisposition</div>
-                            {/* Price Position Bar */}
-                            <div className="relative mb-3">
-                              <div className="h-3 bg-gradient-to-r from-emerald-100 via-emerald-200 to-emerald-100 rounded-full" />
-                              <div
-                                className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-accent rounded-full border-2 border-white shadow-lg"
-                                style={{ left: `${Math.min(Math.max(((val.estimatedValue - val.lowRange) / (val.highRange - val.lowRange)) * 100, 2), 98)}%`, transform: 'translate(-50%, -50%)' }}
-                              />
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-zinc-400">{Number(val.lowRange).toLocaleString('sv')} kr</span>
-                              <span className="font-bold text-accent">{Number(val.estimatedValue).toLocaleString('sv')} kr</span>
-                              <span className="text-zinc-400">{Number(val.highRange).toLocaleString('sv')} kr</span>
-                            </div>
+                          <div className="flex gap-8 mt-4 pt-4 border-t border-emerald-100">
+                            <div><span className="text-xs text-zinc-400 uppercase tracking-widest">Prisintervall</span><div className="text-xl font-medium text-black">{Number(val.lowRange).toLocaleString('sv')} – {Number(val.highRange).toLocaleString('sv')} kr</div></div>
                           </div>
                         )}
-                      </div>
-                    )}
-
-                    {/* Owner History Timeline */}
-                    {v.regDate && Number(v.previous_owners || v.owners || 0) > 0 && (
-                      <div className="card p-12">
-                        <div className="flex items-center gap-4 mb-10">
-                          <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center">
-                            <Users className="w-6 h-6 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="text-3xl font-light text-black tracking-tight">Ägarhistorik</h3>
-                            <p className="text-sm text-zinc-400 font-light">{v.previous_owners || v.owners} ägare sedan {v.regDate?.substring(0, 4)}</p>
-                          </div>
-                        </div>
-                        
-                        {(() => {
-                          const owners = Number(v.previous_owners || v.owners || 0);
-                          const regYear = Number(v.regDate?.substring(0, 4) || v.year || 2010);
-                          const currentYear = new Date().getFullYear();
-                          const totalYears = currentYear - regYear;
-                          const avgYearsPerOwner = totalYears / owners;
-                          
-                          return (
-                            <div>
-                              {/* Timeline bar */}
-                              <div className="relative mb-6">
-                                <div className="h-2 bg-zinc-100 rounded-full" />
-                                {/* Owner change dots */}
-                                {Array.from({ length: Math.min(owners, 15) }).map((_, i) => {
-                                  const position = ((i + 1) / owners) * 100;
-                                  return (
-                                    <div
-                                      key={i}
-                                      className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white shadow-sm"
-                                      style={{ 
-                                        left: `${Math.min(position, 98)}%`,
-                                        transform: 'translate(-50%, -50%)',
-                                        backgroundColor: i === owners - 1 ? '#FF6321' : '#d4d4d8'
-                                      }}
-                                    />
-                                  );
-                                })}
-                              </div>
-                              
-                              {/* Timeline labels */}
-                              <div className="flex justify-between text-sm mb-8">
-                                <span className="text-zinc-400">{regYear}</span>
-                                <span className="text-zinc-400">{currentYear}</span>
-                              </div>
-                              
-                              {/* Stats */}
-                              <div className="grid grid-cols-3 gap-6">
-                                <div className="text-center p-4 bg-zinc-50 rounded-2xl">
-                                  <div className="text-2xl font-bold text-black">{owners}</div>
-                                  <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Ägare</div>
-                                </div>
-                                <div className="text-center p-4 bg-zinc-50 rounded-2xl">
-                                  <div className="text-2xl font-bold text-black">{totalYears}</div>
-                                  <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">År</div>
-                                </div>
-                                <div className="text-center p-4 bg-zinc-50 rounded-2xl">
-                                  <div className="text-2xl font-bold text-black">{avgYearsPerOwner.toFixed(1)}</div>
-                                  <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">År/ägare</div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })()}
                       </div>
                     )}
 
@@ -472,16 +342,12 @@ export default function SearchPage() {
                           <tbody className="divide-y divide-zinc-100">
                             {[
                               ['Registreringsdatum', v.regDate || '–'],
-                              ['Karosstyp', rawV.body_type || '–'],
                               ['Färg', v.color || '–'],
                               ['Tjänstevikt', v.weight ? `${v.weight} kg` : '–'],
                               ['Motoreffekt', v.power ? `${v.power} hk` : '–'],
                               ['Drivmedel', v.fuel || '–'],
-                              ['Växellåda', v.gearbox || '–'],
-                              ['CO₂-utsläpp', rawV.co2 || '–'],
-                              ['Bränsleförbrukning', rawV.fuel_consumption || '–'],
-                              ['VIN', rawV.vin ? `${rawV.vin.substring(0, 8)}${'•'.repeat(9)}` : '–'],
-                            ].filter(([_, val]) => val !== '–').map(([label, value], i) => (
+                              ['Växellåda', v.gearbox || '–']
+                            ].map(([label, value], i) => (
                               <tr key={i} className="hover:bg-zinc-50/50 transition-colors group">
                                 <td className="px-10 py-6 text-sm font-light text-zinc-500 w-1/2">{label}</td>
                                 <td className="px-10 py-6 text-sm font-medium text-black group-hover:text-accent transition-colors">{value}</td>
@@ -517,20 +383,6 @@ export default function SearchPage() {
                         </div>
                       </div>
                     </div>
-
-                    {/* Kalkylator CTA */}
-                    {val.estimatedValue && (
-                      <Link to={`/kalkylator?pris=${val.estimatedValue}`} className="card p-10 block group hover:border-accent/20 transition-all">
-                        <h3 className="text-[10px] font-bold text-black uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                          <Calculator className="w-5 h-5 text-accent" />
-                          Finansieringshjälp
-                        </h3>
-                        <p className="text-zinc-500 font-light text-sm mb-6">Beräkna månadskostnad för billån eller leasing på denna bil.</p>
-                        <div className="flex items-center gap-2 text-accent font-bold text-sm group-hover:gap-3 transition-all">
-                          Öppna kalkylator <ArrowRight size={16} />
-                        </div>
-                      </Link>
-                    )}
 
                     {isPaid && cost.totalMonthlyCost ? (
                       <div className="card p-10">
