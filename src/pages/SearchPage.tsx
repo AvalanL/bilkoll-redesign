@@ -51,7 +51,23 @@ export default function SearchPage() {
     }
   }, [regnr, token]);
 
-  const v = data?.vehicle || {};
+  const rawV = data?.vehicle || {};
+  // Normalize field names (API returns snake_case, component uses camelCase/short names)
+  const v = {
+    ...rawV,
+    fuel: rawV.fuel_type || rawV.fuel || '–',
+    power: rawV.power_hp || rawV.power || '',
+    tax: rawV.tax_yearly || rawV.tax || '',
+    gearbox: rawV.gearbox || (rawV.description?.includes('Manual') ? 'Manuell' : rawV.description?.includes('Automat') ? 'Automat' : ''),
+    regNumber: rawV.regnr || rawV.regNumber || '',
+    regDate: rawV.first_registered || rawV.regDate || '',
+    weight: rawV.weight || rawV.curb_weight || '',
+    lastInspection: rawV.last_inspection || rawV.lastInspection || '',
+    inspectionDate: rawV.inspection_valid_to || rawV.inspectionDate || '',
+    inspection_valid_to: rawV.inspection_valid_to || '',
+    mileage: rawV.mileage || '',
+    previous_owners: rawV.previous_owners || rawV.owners || '',
+  };
   const val = data?.valuation || {};
   const cost = data?.cost || {};
   const hasResult = data && !error && v.make;
@@ -188,6 +204,20 @@ export default function SearchPage() {
                         </div>
                       ))}
                     </div>
+
+                    {/* FREE Market Valuation — always show this */}
+                    {!isPaid && val.estimatedValue && (
+                      <div className="card p-12 border-2 border-emerald-100 bg-gradient-to-br from-emerald-50/50 to-white">
+                        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-600 mb-4">Uppskattat marknadsvärde</div>
+                        <div className="text-5xl font-light text-black tracking-tighter mb-2">{Number(val.estimatedValue).toLocaleString('sv')} <span className="text-2xl text-zinc-400">kr</span></div>
+                        <p className="text-zinc-500 font-light mb-4">Baserat på {val.comparables || data?.market?.totalListings || 0} jämförbara bilar på Blocket, Finn.no, KVD & Bytbil</p>
+                        {val.lowRange && val.highRange && (
+                          <div className="flex gap-8 mt-4 pt-4 border-t border-emerald-100">
+                            <div><span className="text-xs text-zinc-400 uppercase tracking-widest">Prisintervall</span><div className="text-xl font-medium text-black">{Number(val.lowRange).toLocaleString('sv')} – {Number(val.highRange).toLocaleString('sv')} kr</div></div>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Paywall / Premium Section */}
                     {isPaid ? (
