@@ -6,48 +6,36 @@ import { Link } from 'react-router-dom';
 export default function PremiumPage() {
   const plans = [
     {
-      name: 'Bas',
-      price: '0 kr',
-      description: 'Grundläggande fordonsdata för alla.',
-      features: [
-        'Basfakta om fordonet',
-        'Besiktningshistorik',
-        'Tekniska specifikationer',
-        'Marknadsöversikt'
-      ],
-      cta: 'Börja gratis',
-      popular: false
-    },
-    {
       name: 'Premium',
-      price: '99 kr',
-      description: 'Den kompletta rapporten för trygga affärer.',
+      price: '149 kr',
+      description: 'Den kompletta rapporten för trygga bilaffärer.',
       features: [
-        'Allt i Bas-planen',
-        'AI-analys av historik',
+        'AI-riskbedömning',
         'Värdeprognos (3 år)',
         'Dolda fel-varningar',
         'Mätarställningsanalys',
         'Ägarhistorik detaljerad',
-        'Finansieringsanalys',
-        'Total ägandekostnad'
+        'Marknadsanalys i realtid',
+        'Total ägandekostnad',
+        'Export till PDF'
       ],
-      cta: 'Köp rapport',
-      popular: true
+      cta: 'Köp rapport — 149 kr',
+      popular: false
     },
     {
-      name: 'Pro',
-      price: '249 kr',
-      description: 'För dig som letar bil aktivt.',
+      name: '5-pack',
+      price: '349 kr',
+      priceNote: '70 kr/rapport',
+      description: 'Perfekt när du jämför flera bilar.',
       features: [
         '5 Premium-rapporter',
+        'Alla funktioner ovan',
         'Obegränsade prisbevakningar',
-        'Prioriterad support',
-        'Export till PDF',
-        'Spara favoriter'
+        'Spara favoriter',
+        'Prioriterad support'
       ],
-      cta: 'Skaffa Pro',
-      popular: false
+      cta: 'Köp 5-pack — 349 kr',
+      popular: true
     }
   ];
 
@@ -78,7 +66,7 @@ export default function PremiumPage() {
       {/* Pricing Section */}
       <section className="py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {plans.map((plan, i) => (
               <motion.div
                 key={i}
@@ -98,7 +86,11 @@ export default function PremiumPage() {
                   <h3 className="text-2xl font-bold text-black mb-2">{plan.name}</h3>
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl font-bold text-black">{plan.price}</span>
-                    {plan.name !== 'Bas' && <span className="text-zinc-400 text-sm">/rapport</span>}
+                    {plan.name === '5-pack' ? (
+                      <span className="text-zinc-400 text-sm">({plan.priceNote})</span>
+                    ) : (
+                      <span className="text-zinc-400 text-sm">/rapport</span>
+                    )}
                   </div>
                   <p className="text-zinc-500 font-light mt-4 text-sm">{plan.description}</p>
                 </div>
@@ -123,6 +115,15 @@ export default function PremiumPage() {
                 </button>
               </motion.div>
             ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-zinc-400 font-light text-sm">
+              Bilhandlare eller proffs?{' '}
+              <Link to="/api" className="text-accent hover:underline">
+                Se vårt API för obegränsad åtkomst →
+              </Link>
+            </p>
           </div>
         </div>
       </section>
