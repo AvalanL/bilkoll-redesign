@@ -125,9 +125,27 @@ export default function MarketPage() {
     setSearchParams(params, { replace: true });
   }, [selectedMake, selectedModel, selectedYear, setSearchParams]);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) setSubscribed(true);
+    if (!email || !email.includes('@')) return;
+    
+    try {
+      const res = await fetch('/api/email/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          source: 'marknad',
+          context: `${selectedMake || ''} ${selectedModel || ''}`.trim() || null,
+        }),
+      });
+      
+      if (res.ok) {
+        setSubscribed(true);
+      }
+    } catch (err) {
+      console.error('Subscribe error:', err);
+    }
   };
 
   const showDetail = selectedMake && selectedModel && marketDetail && marketDetail.available !== false;

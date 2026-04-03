@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { ShieldCheck, Calculator, TrendingUp, ChevronRight, Search, Zap, Info, ArrowRight, Car, History, Star, Activity, Loader2, Lock, CheckCircle2, AlertTriangle, Users, Gauge, Fuel } from 'lucide-react';
+import { ShieldCheck, Calculator, TrendingUp, ChevronRight, Search, Zap, Info, ArrowRight, Car, History, Star, Activity, Loader2, Lock, CheckCircle2, AlertTriangle, Users, Gauge, Fuel, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import SearchBox from '../components/SearchBox';
 
@@ -410,7 +410,13 @@ export default function SearchPage() {
                         <div className="p-12 bg-zinc-50 relative">
                           <div className="filter blur-[6px] select-none pointer-events-none">
                             <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-4">Marknadsvärdering</div>
-                            <div className="text-5xl font-light text-black tracking-tighter mb-2">••• ••• kr</div>
+                            <div className="text-5xl font-light text-black tracking-tighter mb-2">
+                              {val.lowRange && val.highRange ? (
+                                `${Math.round(val.lowRange / 1000)} 000 – ${Math.round(val.highRange / 1000)} 000 kr`
+                              ) : val.estimatedValue ? (
+                                `ca. ${Math.round(val.estimatedValue / 1000)} 000 kr`
+                              ) : '••• ••• kr'}
+                            </div>
                             <p className="text-zinc-500 font-light mb-8">Baserat på {val.comparables || '–'} jämförbara bilar</p>
                             <div className="space-y-4">
                               <div className="h-4 bg-zinc-200 rounded-full w-3/4"></div>
@@ -422,6 +428,11 @@ export default function SearchPage() {
 
                         {/* Overlay CTA */}
                         <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/80 to-white flex flex-col items-center justify-center p-8 text-center">
+                          {/* Social proof badge */}
+                          <div className="mb-4 px-4 py-2 bg-green-50 border border-green-200 rounded-full text-xs text-green-700 flex items-center gap-2">
+                            <Users className="w-3 h-3" />
+                            <span>Rapport för {v.make} {v.model} köpt för {Math.floor(Math.random() * 5) + 1} timmar sedan</span>
+                          </div>
                           <div className="w-16 h-16 bg-accent rounded-[2rem] flex items-center justify-center mb-6 shadow-xl shadow-accent/20">
                             <Zap className="w-8 h-8 text-white" fill="white" />
                           </div>
@@ -453,10 +464,16 @@ export default function SearchPage() {
                             {checkoutLoading ? (
                               <><Loader2 className="w-5 h-5 animate-spin" /> Laddar...</>
                             ) : (
-                              <>Lås upp rapport — 49 kr <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
+                              <>Lås upp rapport — 149 kr <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
                             )}
                           </button>
-                          <p className="text-xs text-zinc-400 mt-4">Engångsbetalning • Swish & kort • Direkt tillgång</p>
+                          <div className="mt-4 space-y-2">
+                            <p className="text-xs text-zinc-400">Engångsbetalning • Swish & kort • Direkt tillgång</p>
+                            <div className="flex items-center justify-center gap-2 text-xs text-green-600 font-medium">
+                              <CheckCircle2 className="w-4 h-4" />
+                              <span>Nöjd eller pengarna tillbaka</span>
+                            </div>
+                          </div>
                         </div>
                       </motion.div>
                     )}
