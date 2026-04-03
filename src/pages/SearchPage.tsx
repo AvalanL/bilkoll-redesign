@@ -468,7 +468,7 @@ export default function SearchPage() {
                             )}
                           </button>
                           <div className="mt-4 space-y-2">
-                            <p className="text-xs text-zinc-400">Engångsbetalning • Swish & kort • Direkt tillgång</p>
+                            <p className="text-xs text-zinc-400">Engångsbetalning • Kort & Klarna • Direkt tillgång</p>
                             <div className="flex items-center justify-center gap-2 text-xs text-green-600 font-medium">
                               <CheckCircle2 className="w-4 h-4" />
                               <span>Nöjd eller pengarna tillbaka</span>
